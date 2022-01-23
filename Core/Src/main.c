@@ -104,6 +104,7 @@ uint8_t VALCODE5= 1;
 uint8_t VALCODEOLD5= 1;
 
 uint8_t FlagPrintSpeed = 0;
+uint8_t KeyPressFlag = 0;
 uint8_t LAMP=0; // Состояние ламп подсветки
 uint8_t SPEED = 0; // Скорость двигателя
 uint8_t AUTO_ON = 0; // Состояние автоматического режима
@@ -158,8 +159,10 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM3_Init();
   MX_ADC1_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
 HAL_TIM_Base_Start_IT(&htim3); //Запуск таймера, раз в 50мс (опрос кнопок)
+HAL_TIM_Base_Start_IT(&htim4);
 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_SET); //Начальное состояние подсветки - выключено
 HAL_ADC_Start(&hadc1); // Запуск АЦП
 HAL_GPIO_WritePin(GPIOB,GPIO_PIN_4,GPIO_PIN_RESET);
@@ -368,7 +371,7 @@ case 5:
 
 void KeyScan(void)
 {
-    HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
+
 //Переключить пины кнопок на вход с подтяжкой к 1
     GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3
                             |GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7;
@@ -382,10 +385,15 @@ void KeyScan(void)
     VALCODE1 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0);
     if(VALCODE1!=VALCODEOLD1 & VALCODE1 == 0 & SPEED != 0)
     {
-      HAL_Delay(30);
+
+      HAL_TIM_Base_Stop_IT(&htim4);
+      HAL_TIM_Base_Start_IT(&htim4);
+      if(KeyPressFlag){
+      KeyPressFlag = 0;
       VALCODE1 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0);
       if (VALCODE1 == 0){SPEED++;}
       if(SPEED>5){SPEED=5;}
+      }
     }
     VALCODEOLD1 = VALCODE1;
 
@@ -393,19 +401,26 @@ void KeyScan(void)
     VALCODE2 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_3);
     if(VALCODE2!=VALCODEOLD2 & VALCODE2 == 0 & SPEED != 0)
     {
-      HAL_Delay(30);
+      HAL_TIM_Base_Stop_IT(&htim4);
+      HAL_TIM_Base_Start_IT(&htim4);
+      if(KeyPressFlag){
+      KeyPressFlag = 0;
       VALCODE2 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_3);
       if (VALCODE2 == 0){SPEED--;}
       if(SPEED<1){SPEED=1;}
-    }        
+      }
+    }
     VALCODEOLD2 = VALCODE2;        
 
 // Кнопка LAMP    
 VALCODE3 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_2);
     if(VALCODE3!=VALCODEOLD3 & VALCODE3 == 0)
     {
-      HAL_Delay(20);
-      VALCODE3 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_2);
+      HAL_TIM_Base_Stop_IT(&htim4);
+      HAL_TIM_Base_Start_IT(&htim4);
+      if(KeyPressFlag){
+      KeyPressFlag = 0;
+        VALCODE3 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_2);
       if (LAMP == 0)
       {
         if (VALCODE3 == 0){HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_RESET); LAMP = 1;}
@@ -413,13 +428,17 @@ VALCODE3 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_2);
       {
         if (VALCODE3 == 0){HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_SET); LAMP = 0;}      
       }
+      }
     }
     VALCODEOLD3 = VALCODE3; 
 // Кнопка ON/OFF
     VALCODE4 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_4);
     if(VALCODE4!=VALCODEOLD4 & VALCODE4 == 0)
     {
-      HAL_Delay(30);
+      HAL_TIM_Base_Stop_IT(&htim4);
+      HAL_TIM_Base_Start_IT(&htim4);
+      if(KeyPressFlag){
+      KeyPressFlag = 0;
       VALCODE4 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_4);
       if (SPEED == 0)
       {
@@ -428,14 +447,18 @@ VALCODE3 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_2);
       {
         if (VALCODE4 == 0){SPEED = 0;}      
       }
-    }        
+      }
+    }
     VALCODEOLD4 = VALCODE4;  
 
     // Кнопка AUTO
     VALCODE5 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_1);
     if(VALCODE5!=VALCODEOLD5 & VALCODE5 == 0 & SPEED != 0)
     {
-      HAL_Delay(30);
+      HAL_TIM_Base_Stop_IT(&htim4);
+      HAL_TIM_Base_Start_IT(&htim4);
+      if(KeyPressFlag){
+      KeyPressFlag = 0;
       VALCODE5 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_1);
       if (AUTO_ON == 0)
       {
@@ -445,7 +468,8 @@ VALCODE3 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_2);
       {
         if (VALCODE5 == 0){AUTO_ON = 0;}      
       }
-    }        
+      }
+    }
     VALCODEOLD5 = VALCODE5; 
 
 // Вернуть пины кнопок в режим выхода с ОК   
