@@ -25,7 +25,7 @@ if not "%~1" == "" goto debugFile
 
 @echo on 
 
-"C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.3\common\bin\cspybat" -f "F:\_Programmizm\STM32\Indikator\EWARM\settings\Indikator.Indikator.general.xcl" --backend -f "F:\_Programmizm\STM32\Indikator\EWARM\settings\Indikator.Indikator.driver.xcl" 
+"C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.3\common\bin\cspybat" -f "E:\_Programmizm\KronaSteel\EWARM\settings\Indikator.Indikator.general.xcl" --backend -f "E:\_Programmizm\KronaSteel\EWARM\settings\Indikator.Indikator.driver.xcl" 
 
 @echo off 
 goto end 
@@ -34,7 +34,7 @@ goto end
 
 @echo on 
 
-"C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.3\common\bin\cspybat" -f "F:\_Programmizm\STM32\Indikator\EWARM\settings\Indikator.Indikator.general.xcl" "--debug_file=%~1" --backend -f "F:\_Programmizm\STM32\Indikator\EWARM\settings\Indikator.Indikator.driver.xcl" 
+"C:\Program Files (x86)\IAR Systems\Embedded Workbench 7.3\common\bin\cspybat" -f "E:\_Programmizm\KronaSteel\EWARM\settings\Indikator.Indikator.general.xcl" "--debug_file=%~1" --backend -f "E:\_Programmizm\KronaSteel\EWARM\settings\Indikator.Indikator.driver.xcl" 
 
 @echo off 
 :end

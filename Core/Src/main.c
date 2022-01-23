@@ -162,6 +162,7 @@ int main(void)
 HAL_TIM_Base_Start_IT(&htim3); //Запуск таймера, раз в 50мс (опрос кнопок)
 HAL_GPIO_WritePin(GPIOB, GPIO_PIN_3, GPIO_PIN_SET); //Начальное состояние подсветки - выключено
 HAL_ADC_Start(&hadc1); // Запуск АЦП
+HAL_GPIO_WritePin(GPIOB,GPIO_PIN_4,GPIO_PIN_RESET);
 
   /* USER CODE END 2 */
 
@@ -177,8 +178,10 @@ HAL_ADC_Start(&hadc1); // Запуск АЦП
   // Обработка флага прерывания таймера (каждые 50 мс)
   if (FlagPrintSpeed)
   {
+    HAL_GPIO_WritePin(GPIOB,GPIO_PIN_4,GPIO_PIN_SET);
     FlagPrintSpeed = 0;
     KeyScan();
+    HAL_GPIO_WritePin(GPIOB,GPIO_PIN_4,GPIO_PIN_RESET);
   }
   
 //==========================================================================
@@ -371,33 +374,37 @@ void KeyScan(void)
                             |GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7;
     GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
     GPIO_InitStruct.Pull = GPIO_PULLUP;
-    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);    
+    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+   
 // Обработка кнопок
+
 // Кнопка +    
     VALCODE1 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0);
     if(VALCODE1!=VALCODEOLD1 & VALCODE1 == 0 & SPEED != 0)
     {
-      HAL_Delay(50);
+      HAL_Delay(30);
       VALCODE1 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0);
       if (VALCODE1 == 0){SPEED++;}
       if(SPEED>5){SPEED=5;}
     }
     VALCODEOLD1 = VALCODE1;
+
 // Кнопка - 
     VALCODE2 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_3);
     if(VALCODE2!=VALCODEOLD2 & VALCODE2 == 0 & SPEED != 0)
     {
-      HAL_Delay(50);
+      HAL_Delay(30);
       VALCODE2 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_3);
       if (VALCODE2 == 0){SPEED--;}
       if(SPEED<1){SPEED=1;}
     }        
     VALCODEOLD2 = VALCODE2;        
+
 // Кнопка LAMP    
-    VALCODE3 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_2);
+VALCODE3 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_2);
     if(VALCODE3!=VALCODEOLD3 & VALCODE3 == 0)
     {
-      HAL_Delay(50);
+      HAL_Delay(20);
       VALCODE3 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_2);
       if (LAMP == 0)
       {
@@ -412,7 +419,7 @@ void KeyScan(void)
     VALCODE4 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_4);
     if(VALCODE4!=VALCODEOLD4 & VALCODE4 == 0)
     {
-      HAL_Delay(50);
+      HAL_Delay(30);
       VALCODE4 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_4);
       if (SPEED == 0)
       {
@@ -428,7 +435,7 @@ void KeyScan(void)
     VALCODE5 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_1);
     if(VALCODE5!=VALCODEOLD5 & VALCODE5 == 0 & SPEED != 0)
     {
-      HAL_Delay(80);
+      HAL_Delay(30);
       VALCODE5 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_1);
       if (AUTO_ON == 0)
       {
@@ -440,6 +447,7 @@ void KeyScan(void)
       }
     }        
     VALCODEOLD5 = VALCODE5; 
+
 // Вернуть пины кнопок в режим выхода с ОК   
     GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3
                           |GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7;
@@ -447,6 +455,7 @@ void KeyScan(void)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
 // Обновить индикатор
     PrintSpeed(SPEED);
 }
