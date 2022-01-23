@@ -490,6 +490,12 @@ void HAL_TIM_PeriodElapsedCallback (TIM_HandleTypeDef *htim)
   {
     FlagPrintSpeed = 1;
   }
+
+  if(htim->Instance == TIM4)
+  {
+    KeyPressFlag = 1;
+  }
+
 }
 /* USER CODE END 4 */
 
