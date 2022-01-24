@@ -88,6 +88,7 @@ uint8_t LIT_3[8]        = {0,0,0,0,1,1,0,1};
 uint8_t LIT_4[8]        = {1,0,0,1,1,0,0,1};
 uint8_t LIT_5[8]        = {0,1,0,0,1,0,0,1};
 uint8_t LIT_A[8]        = {0,0,0,1,0,0,0,1};
+uint8_t LIT_t[8]        = {1,1,1,0,0,0,0,1};
 
 GPIO_InitTypeDef GPIO_InitStruct = {0};
 
@@ -105,6 +106,7 @@ uint8_t VALCODEOLD5= 1;
 
 uint8_t FlagPrintSpeed = 0;
 uint8_t KeyPressFlag = 0;
+uint8_t TimerFlag = 0;
 uint8_t LAMP=0; // Состояние ламп подсветки
 uint8_t SPEED = 0; // Скорость двигателя
 uint8_t AUTO_ON = 0; // Состояние автоматического режима
@@ -160,6 +162,7 @@ int main(void)
   MX_TIM3_Init();
   MX_ADC1_Init();
   MX_TIM4_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 HAL_TIM_Base_Start_IT(&htim3); //Запуск таймера, раз в 50мс (опрос кнопок)
 HAL_TIM_Base_Start_IT(&htim4);
@@ -344,6 +347,8 @@ void PrintLit(uint8_t* LIT)
 void PrintSpeed(uint8_t Speed)
 {
   PrintLit(LIT_BLANK);
+if(!TimerFlag)
+{
 if(AUTO_ON == 0)
 {
 switch (Speed)
@@ -366,6 +371,9 @@ case 5:
 }
 }else{
   PrintLit(LIT_A);
+}
+}else{
+  PrintLit(LIT_t);
 }
 }
 
@@ -440,15 +448,28 @@ VALCODE3 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_2);
       if(KeyPressFlag){
       KeyPressFlag = 0;
       VALCODE4 = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_4);
-      if (SPEED == 0)
+      if (TimerFlag && VALCODE4 == 0){TimerFlag = 0; AUTO_ON = 0; SPEED = 0;}else{
+          if (SPEED == 0)
+      {
+        if (VALCODE4 == 0){SPEED = 2;}
+      }else
+      {    
+        HAL_TIM_Base_Stop_IT(&htim2);
+        HAL_TIM_Base_Start_IT(&htim2);
+          TimerFlag = 1;
+      }
+      }}
+    }
+/*
+          if (SPEED == 0)
       {
         if (VALCODE4 == 0){SPEED = 2;}
       }else
       {
         if (VALCODE4 == 0){SPEED = 0;}      
-      }
-      }
-    }
+     }
+*/
+    
     VALCODEOLD4 = VALCODE4;  
 
     // Кнопка AUTO
@@ -489,6 +510,7 @@ void HAL_TIM_PeriodElapsedCallback (TIM_HandleTypeDef *htim)
   if(htim->Instance == TIM3)
   {
     FlagPrintSpeed = 1;
+    HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
   }
 
   if(htim->Instance == TIM4)
@@ -496,6 +518,12 @@ void HAL_TIM_PeriodElapsedCallback (TIM_HandleTypeDef *htim)
     KeyPressFlag = 1;
   }
 
+  if(htim->Instance == TIM2)
+  {
+    TimerFlag = 0;
+    AUTO_ON = 0;
+    SPEED = 0;
+  }
 }
 /* USER CODE END 4 */
 
