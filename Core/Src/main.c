@@ -110,6 +110,7 @@ uint8_t TimerFlag = 0;
 uint8_t LAMP=0; // Состояние ламп подсветки
 uint8_t SPEED = 0; // Скорость двигателя
 uint8_t AUTO_ON = 0; // Состояние автоматического режима
+uint8_t AUTO_count = 0;
 
 int mq4_data = 0; //Данные АЦП
 
@@ -189,6 +190,8 @@ HAL_GPIO_WritePin(GPIOB,GPIO_PIN_4,GPIO_PIN_RESET);
     KeyScan();
     HAL_GPIO_WritePin(GPIOB,GPIO_PIN_4,GPIO_PIN_RESET);
   }
+
+  if (AUTO_count>80){AUTO_count = 0; mq4_data = mq4_get_adc();}
   
 //==========================================================================
 // Обработка управления двигателем
@@ -232,7 +235,7 @@ HAL_GPIO_WritePin(GPIOB,GPIO_PIN_4,GPIO_PIN_RESET);
     break;
   }
   }else{
-mq4_data = mq4_get_adc();
+
 if (mq4_data>100 & mq4_data<400)
 {
   SPEED=1;
@@ -240,28 +243,28 @@ if (mq4_data>100 & mq4_data<400)
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12, GPIO_PIN_SET);
 
 }else
-if (mq4_data>500 & mq4_data<900)
+if (mq4_data>500 & mq4_data<2150)
 {
   SPEED=2;
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12, GPIO_PIN_SET);
 
 }else
-if (mq4_data>1000 & mq4_data<1400)
+if (mq4_data>2200 & mq4_data<2350)
 {
   SPEED=3;
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_11 | GPIO_PIN_12, GPIO_PIN_SET);
 
 }else
-if (mq4_data>1500 & mq4_data<1900)
+if (mq4_data>2400 & mq4_data<2550)
 {
   SPEED=4;
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_12, GPIO_PIN_SET);
 
 }else
-if (mq4_data>2000)
+if (mq4_data>2600)
 {
   SPEED=5;
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_12, GPIO_PIN_RESET);
@@ -270,7 +273,8 @@ if (mq4_data>2000)
 }  
 
   } // Завершение обработки управления двигателем
-  
+
+
 } // Завершение while 
   /* USER CODE END 3 */
 }
@@ -387,6 +391,7 @@ void KeyScan(void)
     GPIO_InitStruct.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
    
+    AUTO_count++;
 // Обработка кнопок
 
 // Кнопка +    
